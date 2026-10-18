@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sai Traders — Retail Operations & Inventory Management</title>
+  <link rel="stylesheet" href="style.css?v=10">
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand-section">
+        <div class="brand-logo-mark" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2"/>
+            <path d="M7 7h10M7 12h10M7 17h6"/>
+          </svg>
+        </div>
+        <div class="brand-title-group">
+          <div class="brand-title">Sai Traders</div>
+          <div class="brand-subtitle">Retail Operations & Tally Bridge</div>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <div class="status-indicator" id="tallyStatusIndicator" title="Tally ERP Local Connection">
+          <span class="status-dot" id="tallyDot"></span>
+          <span id="tallyStatusText">Tally: 9000 (Checking...)</span>
+        </div>
+        <div class="status-indicator" id="morningSyncIndicator" title="Daily Ingestion Status">
+          <span>Sync:</span>
+          <strong id="morningSyncText" style="font-weight:600;">Idle</strong>
+        </div>
+        <div class="status-indicator" id="waTokenIndicator" title="Meta Cloud API Connection">
+          <span class="status-dot" id="waDot"></span>
+          <span id="waStatusText">WhatsApp: Active</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-outline" id="btnGodownSetup" title="Active SaaS Godown - Click to configure / change" style="display:flex; align-items:center; gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <span style="font-size:11px; color:var(--text-muted);">Godown:</span>
+          <span id="activeGodownBadge" style="color:var(--status-emerald); font-family:var(--font-mono); font-weight:700;">Sarees</span>
+        </button>
+        <a href="/archify" target="_blank" class="btn btn-outline" style="text-decoration:none;" title="Open System Architecture Map">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="8" height="8" x="3" y="3" rx="1"/><rect width="8" height="8" x="13" y="3" rx="1"/><rect width="8" height="8" x="3" y="13" rx="1"/><rect width="8" height="8" x="13" y="13" rx="1"/></svg>
+          Topology
+        </a>
+        <button class="btn btn-outline" id="btnMorningSync" title="Execute daily closing balance sync from Tally Godown">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+          Sync Tally Balances
+        </button>
+        <button class="btn btn-outline" id="btnRefresh" title="Refresh data">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Application Sections">
+      <button class="tab-btn active" data-tab="tabInventory">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Inventory
+        <span class="tab-count" id="badgeInventoryCount">0</span>
+      </button>
+
+      <button class="tab-btn" data-tab="tabAnalytics">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Sales Analytics
+      </button>
+
+      <button class="tab-btn" data-tab="tabStockLog">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+        Reconciliation & Discrepancies
+        <span class="tab-count" id="badgeDiscrepancyCount" style="display:none; background:var(--status-rose-bg); color:var(--status-rose); border:1px solid var(--status-rose-border);">0</span>
+      </button>
+
+      <button class="tab-btn" data-tab="tabMatcher">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="m11 8 3 3-3 3"/></svg>
+        Visual Search
+      </button>
+
+      <button class="tab-btn" data-tab="tabVideos">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Catalog Media
+        <span class="tab-count" id="badgeVideoCount">0</span>
+      </button>
+
+      <button class="tab-btn" data-tab="tabArchify">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><path d="m10 15 5-3-5-3v6z"/></svg>
+        System Architecture
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Application Container -->
+  <main class="main-container">
+
+    <!-- =========================================================================
+         TAB 1: INVENTORY CATALOG
+         ========================================================================= -->
+    <section class="tab-panel active" id="tabInventory">
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" class="search-input" id="inventorySearch" placeholder="Search by SKU, product code, or saree name...">
+        </div>
+
+        <div class="filter-group">
+          <button class="filter-pill active" data-filter="in_stock" id="pillInStock">In Stock (Sarees)</button>
+          <button class="filter-pill" data-filter="all">All Items (<span id="countAllCatalog">8</span>)</button>
+          <button class="filter-pill" data-filter="has_video">Video Attached</button>
+          <button class="filter-pill" data-filter="missing_video">Missing Video</button>
+        </div>
+
+        <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+          <button class="btn btn-outline" id="btnToggleGroupMode" title="Select multiple sarees to combine them into one color family">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Group Sarees
+          </button>
+          <button class="btn btn-outline" id="btnSyncTallyAll" title="Query Sarees Godown balances for all catalog products">
+            <svg class="sync-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            Sync All Stock
+          </button>
+          <button class="btn btn-primary" id="btnOpenAddSareeModal" title="Add a new saree to catalog with photo and vector embedding">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Saree
+          </button>
+        </div>
+      </div>
+
+      <!-- Floating Group Action Bar when Group Mode is active -->
+      <div id="groupActionBar" class="group-action-bar" style="display:none;">
+        <div class="group-bar-left">
+          <span class="group-bar-badge" id="selectedGroupCount">0 selected</span>
+          <span class="group-bar-hint">Select 2 or more sarees from the catalog to combine them into one color family.</span>
+        </div>
+        <div class="group-bar-actions">
+          <button class="btn btn-sm btn-outline" id="btnCancelGroupMode">Cancel</button>
+          <button class="btn btn-sm btn-primary" id="btnConfirmGroupSelected" disabled>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+            Combine into Family
+          </button>
+        </div>
+      </div>
+
+      <div class="inventory-grid" id="inventoryGrid">
+        <div style="padding: 40px; text-align: center; color: var(--text-muted);">Loading catalog inventory...</div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 2: RECONCILIATION & DISCREPANCIES (PHASE 2)
+         ========================================================================= -->
+    <section class="tab-panel" id="tabStockLog">
+      <!-- Sync Control & Dynamic Schedule Bar -->
+      <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:16px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:20px;">
+          <div>
+            <div style="font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em;">Daily Ingestion Schedule</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
+              <input type="time" id="syncScheduleInput" class="form-input" style="width:115px; padding:4px 8px; font-size:12px;" value="09:30">
+              <button class="btn btn-sm btn-outline" id="btnSaveSyncSchedule">Save Time</button>
+            </div>
+          </div>
+          <div style="border-left:1px solid var(--border); padding-left:20px;">
+            <div style="font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em;">Shop Terminal Telemetry</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:7px; font-size:12px;">
+              <span class="status-dot" id="agentLiveDot" style="background:var(--status-amber);"></span>
+              <span id="agentLiveStatusText" style="color:var(--text-secondary); font-family:var(--font-mono);">Connecting...</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn btn-outline" id="btnOpenDowntimeModal" style="border-color:var(--status-amber-border); color:var(--status-amber);" title="Enter shelf stock manually when Shop PC is powered off">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Manual Inventory Adjustment
+          </button>
+          <button class="btn btn-primary" id="btnRunSyncNow">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            Trigger Ingestion Run
+          </button>
+        </div>
+      </div>
+
+      <!-- Downtime Warning Banner (Shown when PC offline) -->
+      <div id="downtimeAlertBanner" style="display:none; background:var(--status-amber-bg); border:1px solid var(--status-amber-border); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--status-amber)" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div>
+              <strong style="color:var(--status-amber); font-size:12px;">Shop Terminal Disconnected</strong>
+              <p style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
+                Tally ERP on 127.0.0.1:9000 is unreachable. Cloud inventory remains active for customer orders. Use Manual Inventory Adjustment if stock quantities need immediate adjustment.
+              </p>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline" style="border-color:var(--status-amber-border); color:var(--status-amber);" onclick="document.getElementById('btnOpenDowntimeModal').click()">
+            Record Shelf Count
+          </button>
+        </div>
+      </div>
+
+      <!-- Discrepancies Table Section -->
+      <div class="panel-card" style="margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div>
+            <h3 style="font-size:13px; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+              <span>Discrepancy Queue</span>
+              <span class="tab-count" id="openDiscrepanciesCount" style="background:var(--status-rose-bg); color:var(--status-rose); border:1px solid var(--status-rose-border);">0</span>
+            </h3>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">Unexplained variances between Tally Online Godown and cloud ledger awaiting verification.</p>
+          </div>
+          <div class="filter-group">
+            <button class="filter-pill active" id="btnFilterDiscOpen" onclick="window.filterDiscrepancies('open')">Open Only</button>
+            <button class="filter-pill" id="btnFilterDiscAll" onclick="window.filterDiscrepancies('all')">All History</button>
+          </div>
+        </div>
+
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Product Code</th>
+                <th>Product Name</th>
+                <th>Cloud Expected</th>
+                <th>Tally Actual</th>
+                <th>Variance</th>
+                <th>Audit Notes</th>
+                <th>Detected At</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="discrepanciesTableBody">
+              <tr><td colspan="8" style="padding:24px; text-align:center; color:var(--text-muted);">No open discrepancies. Cloud ledger matches Tally ERP.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- New Stock Inwards & Draft Sarees Grid -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <!-- Left: New Stock Inward Detected -->
+        <div class="panel-card">
+          <h3 style="font-size:12px; font-weight:600; color:var(--status-emerald); margin-bottom:2px;">
+            Recent Inward Receipts
+          </h3>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Stock balance increments detected from Tally Online Godown and accepted into cloud inventory.</p>
+          <div id="newStockInwardList" style="max-height:200px; overflow-y:auto; font-size:12px;">
+            <div style="padding:16px; text-align:center; color:var(--text-muted);">No inward receipts recorded recently.</div>
+          </div>
+        </div>
+
+        <!-- Right: Unknown Tally SKUs Auto-Created as Drafts -->
+        <div class="panel-card">
+          <h3 style="font-size:12px; font-weight:600; color:#38bdf8; margin-bottom:2px;">
+            Uncataloged Tally Items
+          </h3>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">New items discovered in Tally Godown awaiting catalog categorization and photography.</p>
+          <div id="newDraftProductsList" style="max-height:200px; overflow-y:auto; font-size:12px;">
+            <div style="padding:16px; text-align:center; color:var(--text-muted);">No uncataloged items found in Tally.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Sync Runs Log -->
+      <div class="panel-card">
+        <h3 style="font-size:12px; font-weight:600; color:var(--text-primary); margin-bottom:12px;">
+          Synchronization Audit Log
+        </h3>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Run ID</th>
+                <th>Initiated By</th>
+                <th>Status</th>
+                <th>Started</th>
+                <th>Finished</th>
+                <th>Step Audit Summary</th>
+              </tr>
+            </thead>
+            <tbody id="syncRunsTableBody">
+              <tr><td colspan="6" style="padding:20px; text-align:center; color:var(--text-muted);">Loading audit history...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 3: VISUAL LOOKUP
+         ========================================================================= -->
+    <section class="tab-panel" id="tabMatcher">
+      <div class="matcher-grid">
+        <div class="panel-card">
+          <div class="panel-title">Visual Query Input</div>
+          <div class="panel-subtitle">Upload customer reference image or screenshot to identify the matching catalog saree from keyframes.</div>
+
+          <div class="dropzone" id="screenshotDropzone">
+            <input type="file" id="screenshotFileInput" accept="image/*" style="display:none;">
+            <div class="dropzone-prompt" id="dropPrompt">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <p style="font-weight: 500; color: var(--text-primary); margin:0;">Click or drag reference image here</p>
+              <span style="font-size:11px; color:var(--text-muted);">Or paste from clipboard (Ctrl+V)</span>
+            </div>
+            <div class="dropzone-preview" id="dropPreview">
+              <img id="screenshotPreviewImg" src="" alt="Reference image preview">
+            </div>
+          </div>
+
+          <div style="margin-top: 14px;">
+            <div class="form-group">
+              <label>Customer Inquiry Context (Optional)</label>
+              <input type="text" id="customerHintInput" class="form-input" placeholder="e.g. Inquiring about kanjivaram border from reel">
+            </div>
+
+            <div style="margin-top: 14px; display:flex; gap:8px;">
+              <button class="btn btn-primary" id="btnRunIdentification" style="flex:1;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Identify Product
+              </button>
+              <button class="btn btn-outline" id="btnClearScreenshot" style="display:none;">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">Match Result & Live Stock</div>
+          <div class="panel-subtitle">Multimodal embedding match against catalog keyframes and craft records.</div>
+
+          <div class="match-empty-state" id="matchEmptyState">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            <span>Upload or paste an image on the left to begin identification.</span>
+          </div>
+
+          <div class="match-empty-state" id="matchLoadingState" style="display:none;">
+            <div class="status-indicator">
+              <span class="status-dot"></span>
+              <span>Running Multimodal Vector Analysis...</span>
+            </div>
+          </div>
+
+          <div class="match-verdict-card" id="matchVerdictCard">
+            <div class="verdict-header">
+              <div>
+                <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); display:block;">Matched Product</span>
+                <div class="verdict-title" id="verdictSareeName">—</div>
+              </div>
+              <div class="confidence-meter" id="verdictConfidence">
+                <span class="status-dot"></span>
+                <span>98% Match</span>
+              </div>
+            </div>
+
+            <div class="comparison-grid">
+              <div class="comparison-col">
+                <div class="comparison-label">Reference Image</div>
+                <div class="comparison-media">
+                  <img id="compCustomerImg" src="" alt="Customer Reference">
+                </div>
+              </div>
+              <div class="comparison-col">
+                <div class="comparison-label">Catalog Keyframe</div>
+                <div class="comparison-media">
+                  <img id="compKeyframeImg" src="" alt="Catalog Keyframe">
+                </div>
+              </div>
+            </div>
+
+            <table class="match-details-table">
+              <tr>
+                <td>Product Code</td>
+                <td><strong id="verdictCode" style="font-family:var(--font-mono); color:#38bdf8;">—</strong></td>
+              </tr>
+              <tr>
+                <td>Match Reasoning</td>
+                <td id="verdictReasoning" style="color:var(--text-secondary);">—</td>
+              </tr>
+              <tr>
+                <td>Online Godown Stock</td>
+                <td id="verdictStock">—</td>
+              </tr>
+              <tr>
+                <td>Pricing</td>
+                <td id="verdictPricing">—</td>
+              </tr>
+              <tr>
+                <td>Description</td>
+                <td id="verdictDescription" style="color:var(--text-muted); font-size:11px;">—</td>
+              </tr>
+            </table>
+
+            <div class="whatsapp-box">
+              <div class="whatsapp-box-header">
+                <label style="font-size:11px; font-weight:600; color:var(--text-secondary);">Formatted WhatsApp Response</label>
+                <button class="btn btn-sm btn-outline" id="btnCopyWhatsApp">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  Copy Message
+                </button>
+              </div>
+              <textarea id="whatsappReplyText" readonly></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 4: MEDIA CATALOG
+         ========================================================================= -->
+    <section class="tab-panel" id="tabVideos">
+      <div class="toolbar">
+        <div>
+          <h2 style="font-size:13px; font-weight:600; color:var(--text-primary);">Video & Keyframe Registry</h2>
+          <p style="font-size:11px; color:var(--text-muted);">Product videos and sampled keyframes indexed for visual search.</p>
+        </div>
+        <button class="btn btn-primary" id="btnOpenVideoModal">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Attach Media
+        </button>
+      </div>
+
+      <div class="inventory-grid" id="videoGrid">
+        <div style="padding: 40px; text-align: center; color: var(--text-muted);">Loading media registry...</div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 5: SYSTEM ARCHITECTURE
+         ========================================================================= -->
+    <section class="tab-panel" id="tabArchify" style="height: calc(100vh - 120px); padding: 0;">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 14px; background:var(--bg-surface); border-bottom:1px solid var(--border);">
+        <div style="font-size:12px; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+          <span>System Topology & Runtime Architecture</span>
+          <span style="font-size:10px; padding:2px 6px; border-radius:var(--radius-xs); background:var(--status-emerald-bg); color:var(--status-emerald); font-family:var(--font-mono); border:1px solid var(--status-emerald-border);">Interactive View</span>
+        </div>
+        <a href="/archify" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none;">
+          Open in New Window
+        </a>
+      </div>
+      <iframe src="/archify" style="width:100%; height:calc(100% - 42px); border:none;" title="Architecture Diagram"></iframe>
+    </section>
+
+    <!-- =========================================================================
+         TAB 6: SALES ANALYTICS
+         ========================================================================= -->
+    <section class="tab-panel" id="tabAnalytics">
+      <div class="analytics-header-bar">
+        <div>
+          <h2 style="font-size:18px; font-weight:700; color:var(--text-primary); margin:0;">Sales & Revenue Intelligence</h2>
+          <p style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">Real-time orders, revenue metrics, and inventory sales performance</p>
+        </div>
+        <div class="filter-group" id="analyticsPeriodFilter">
+          <button class="filter-pill" data-period="today">Today</button>
+          <button class="filter-pill active" data-period="7d">Last 7 Days</button>
+          <button class="filter-pill" data-period="30d">Last 30 Days</button>
+          <button class="filter-pill" data-period="all">All Time</button>
+          <button class="btn btn-sm btn-outline" id="btnRefreshAnalytics" title="Reload Analytics">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+          <button class="btn btn-sm btn-primary" id="btnSyncGoogleSheets" title="Sync Sales to Google Spreadsheet" style="display:flex; align-items:center; gap:5px; background:linear-gradient(135deg, #059669, #10b981);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Sync to Google Sheet
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Metrics Cards Grid -->
+      <div class="analytics-kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.12); color: var(--status-emerald);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-label">Total Revenue</div>
+            <div class="kpi-val" id="kpiRevenue">₹0</div>
+            <div class="kpi-meta" id="kpiRevenueMeta">From completed sales</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-label">Completed Orders</div>
+            <div class="kpi-val" id="kpiOrders">0</div>
+            <div class="kpi-meta" id="kpiOrdersMeta">Orders fulfilled/confirmed</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background: rgba(168, 85, 247, 0.12); color: #c084fc;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v2m0 8v2"/></svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-label">Average Order Value</div>
+            <div class="kpi-val" id="kpiAOV">₹0</div>
+            <div class="kpi-meta">Per completed transaction</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--status-amber);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-label">Saree Units Sold</div>
+            <div class="kpi-val" id="kpiUnits">0</div>
+            <div class="kpi-meta" id="kpiUnitsMeta">Dispatched from locked godown</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secondary Row: Top Sellers & Channel Breakdown -->
+      <div class="analytics-sub-grid">
+        <div class="analytics-sub-card">
+          <div class="card-title-row">
+            <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Top-Selling Sarees</span>
+            <span style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);" id="topSareesPeriodText">In Period</span>
+          </div>
+          <div id="topSareesList" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+            <div style="color:var(--text-muted); font-size:12px; text-align:center; padding:16px;">Loading top items...</div>
+          </div>
+        </div>
+
+        <div class="analytics-sub-card">
+          <div class="card-title-row">
+            <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Order Channels & Statuses</span>
+            <span style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">Distribution</span>
+          </div>
+          <div id="channelStatusDistribution" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+            <div style="color:var(--text-muted); font-size:12px; text-align:center; padding:16px;">Loading distribution...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders Transactions Ledger Table -->
+      <div class="analytics-table-container">
+        <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Orders & Sales Ledger</span>
+            <span style="margin-left:8px; font-size:11px; padding:2px 8px; border-radius:12px; background:var(--bg-canvas); color:var(--text-secondary); border:1px solid var(--border);" id="ordersRecordCount">0 orders</span>
+          </div>
+          <span style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">Live Cloud Synced</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="analytics-table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Saree Items</th>
+                <th>Units</th>
+                <th>Total (₹)</th>
+                <th>Payment</th>
+                <th>Channel</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="analyticsOrdersTbody">
+              <tr>
+                <td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">Loading sales orders...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL: ATTACH MEDIA & DESCRIPTION
+       ========================================================================= -->
+  <div class="modal-overlay" id="videoModal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="videoModalTitle">Attach Catalog Media</h3>
+        <button class="close-btn" id="closeVideoModalBtn" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Target Product</label>
+          <select id="vTargetSareeSelect" class="form-select"></select>
+        </div>
+
+        <div class="form-group">
+          <label>Video File or Resource URL</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="vSourceUrlInput" class="form-input" placeholder="Paste URL or select file...">
+            <button class="btn btn-outline" id="btnChooseVideoFile">Browse</button>
+            <input type="file" id="videoFileInput" accept="video/*" style="display:none;">
+          </div>
+        </div>
+
+        <div id="videoPlayerBox" style="display:none; text-align:center; background:#000; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <video id="modalVideoPlayer" controls playsinline style="max-width:100%; max-height:220px;"></video>
+          <div style="margin-top:8px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+            <button type="button" class="btn btn-sm btn-primary" id="btnCaptureCurrentFrame">Capture Keyframe</button>
+            <button type="button" class="btn btn-sm btn-outline" id="btnAutoSampleFrames">Auto-Sample 3 Frames</button>
+            <button type="button" class="btn btn-sm btn-outline" id="btnAddFrameFileBtn">Upload Frame</button>
+            <input type="file" id="frameFileInput" accept="image/*" multiple style="display:none;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Sampled Keyframes for Visual Search</label>
+          <div id="frameFilmstrip" style="display:flex; gap:8px; overflow-x:auto; padding:8px; background:var(--bg-canvas); border:1px solid var(--border); border-radius:var(--radius-sm); min-height:74px; align-items:center;">
+            <span style="font-size:11px; color:var(--text-muted);">No keyframes captured yet. Play video above and click "Capture Keyframe".</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+          <div class="form-group">
+            <label>Fabric</label>
+            <input type="text" id="vFabricInput" class="form-input" placeholder="e.g. Pure Silk">
+          </div>
+          <div class="form-group">
+            <label>Weave Style</label>
+            <input type="text" id="vWeaveInput" class="form-input" placeholder="e.g. Paithani">
+          </div>
+          <div class="form-group">
+            <label>Zari Type</label>
+            <input type="text" id="vZariInput" class="form-input" placeholder="e.g. Gold Tested">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Craftsmanship & Fabric Description</label>
+          <textarea id="vDescriptionInput" class="form-textarea" rows="3" placeholder="Describe weave, border motifs, zari type, and color details..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelVideoModal">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveVideo">Save Media Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: PHOTO VIEWER & MANAGER
+       ========================================================================= -->
+  <div class="modal-overlay" id="photoModal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="photoModalTitle">Product Photography</h3>
+        <button class="close-btn" id="closePhotoModalBtn" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="photoModalSku">
+        <label style="font-size:11px; font-weight:600; color:var(--text-secondary);">Assigned Images</label>
+        <div id="photoModalGrid" style="display:flex; gap:10px; flex-wrap:wrap; min-height:80px; padding:10px; background:var(--bg-canvas); border:1px solid var(--border); border-radius:var(--radius-sm);"></div>
+
+        <div class="form-group" style="margin-top:10px;">
+          <label>Add Image (Upload File or Enter URL)</label>
+          <div style="display:flex; gap:8px;">
+            <input type="url" id="photoUrlInput" class="form-input" placeholder="https://...">
+            <button class="btn btn-outline" id="btnBrowsePhotoFile">Upload File</button>
+            <input type="file" id="photoFileInput" accept="image/*" style="display:none;">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnClosePhotoModal">Close</button>
+        <button class="btn btn-primary" id="btnAssignPhotoUrl">Assign Image</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: SAAS INITIAL GODOWN SETUP & CONFIGURATION WIZARD
+       ========================================================================= -->
+  <div class="modal-overlay" id="modalGodownSetup" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:32px; height:32px; border-radius:var(--radius-sm); background:rgba(56, 189, 248, 0.12); color:#38bdf8; display:flex; align-items:center; justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div>
+            <h3 style="margin:0; font-size:15px; font-weight:700;">SaaS Godown Setup</h3>
+            <div style="font-size:11px; color:var(--text-muted);">Designate & Lock Inventory Location</div>
+          </div>
+        </div>
+        <button class="close-btn" id="btnCloseGodownSetup" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background:var(--bg-canvas); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; margin-bottom:14px; font-size:12px; line-height:1.5; color:var(--text-secondary);">
+          Select the designated Tally Godown for this shop. <strong>Strict isolation is enforced</strong>: all catalog stock counts, morning syncs, inwarding, and WhatsApp sales voucher deductions will strictly modify only this chosen godown.
+        </div>
+
+        <div class="form-group">
+          <label style="font-weight:600; display:flex; justify-content:space-between; align-items:center;">
+            <span>Select Godown from Tally*</span>
+            <span id="tallyGodownDetectStatus" style="font-size:11px; color:var(--status-emerald); font-weight:normal; font-family:var(--font-mono);">Live from Tally ERP</span>
+          </label>
+          <select id="selectSaaSTargetGodown" class="form-input" style="height:38px; cursor:pointer;">
+            <option value="Sarees">Sarees</option>
+            <option value="Online">Online</option>
+            <option value="Main Location">Main Location</option>
+          </select>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+            Queried live from connected Tally ERP instance.
+          </div>
+        </div>
+
+        <div style="background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.2); border-radius:var(--radius-sm); padding:10px 12px; display:flex; gap:10px; align-items:center; margin-top:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--status-emerald)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div style="font-size:11px; color:var(--text-secondary);">
+            Strict Isolation Guarantee: Zero changes will ever be made to other godowns.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelGodownSetup">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveGodownSetup">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Save & Lock Godown
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: ADJUST STOCK IN TALLY
+       ========================================================================= -->
+  <div class="modal-overlay" id="adjustStockModal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 id="adjustModalTitle">Update Tally Stock</h3>
+        <button class="close-btn" id="closeAdjustStockModalBtn" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="adjustStockSku">
+        <div style="padding:10px 12px; background:var(--bg-canvas); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:12px;">
+          <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-family:var(--font-mono);">Target Product</div>
+          <div id="adjustModalSareeName" style="font-weight:600; color:var(--text-primary); margin-top:2px;">—</div>
+          <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:12px;">
+            <span>Godown: <strong id="adjustModalGodownLabel" style="color:#38bdf8;">Sarees</strong></span>
+            <span>Current Stock: <strong id="adjustModalCurrentStock" style="color:var(--status-emerald);">0 Nos</strong></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Target Quantity (Units)*</label>
+          <input type="number" id="adjustTargetQuantityInput" class="form-input" min="0" placeholder="e.g. 10">
+        </div>
+
+        <div class="form-group">
+          <label>Audit Narration (Optional)</label>
+          <input type="text" id="adjustReasonInput" class="form-input" placeholder="e.g. Physical inventory count verified">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelAdjustModal">Cancel</button>
+        <button class="btn btn-primary" id="btnConfirmAdjustStock">
+          Submit to Tally
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: RESOLVE STOCK DISCREPANCY (PHASE 2)
+       ========================================================================= -->
+  <div class="modal-overlay" id="discrepancyModal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 id="discrepancyModalTitle">Resolve Stock Discrepancy</h3>
+        <button class="close-btn" id="closeDiscrepancyModalBtn" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="discModalId">
+        <input type="hidden" id="discModalProductCode">
+
+        <!-- Discrepancy Item Summary -->
+        <div style="padding:12px; background:var(--bg-canvas); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong id="discModalItemCode" style="font-family:var(--font-mono); color:#38bdf8; font-size:12px;">—</strong>
+            <span id="discModalDeltaBadge" class="status-chip error">-1 Variance</span>
+          </div>
+          <div id="discModalItemName" style="font-weight:600; color:var(--text-primary); font-size:13px; margin-top:4px;">—</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; font-size:12px;">
+            <div>Cloud Expected: <strong id="discModalExpectedQty" style="font-family:var(--font-mono); color:var(--text-primary);">0</strong></div>
+            <div>Tally Actual: <strong id="discModalActualQty" style="font-family:var(--font-mono); color:var(--status-rose);">0</strong></div>
+          </div>
+          <div id="discModalExplanation" style="font-size:11px; color:var(--text-muted); margin-top:6px;">—</div>
+        </div>
+
+        <!-- Strategy Selection -->
+        <div class="form-group">
+          <label style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:block;">Resolution Strategy*</label>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <label style="display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; background:var(--bg-surface);">
+              <input type="radio" name="discResolutionAction" value="accept_tally" checked style="margin-top:2px;">
+              <div>
+                <strong style="font-size:12px; color:var(--text-primary); display:block;">Accept Tally Balance</strong>
+                <span style="font-size:11px; color:var(--text-muted);">Sync cloud online stock down to match Tally count.</span>
+              </div>
+            </label>
+
+            <label style="display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; background:var(--bg-surface);">
+              <input type="radio" name="discResolutionAction" value="keep_cloud" style="margin-top:2px;">
+              <div>
+                <strong style="font-size:12px; color:var(--text-primary); display:block;">Retain Cloud Balance</strong>
+                <span style="font-size:11px; color:var(--text-muted);">Retain cloud balance (e.g., Tally voucher entry pending).</span>
+              </div>
+            </label>
+
+            <label style="display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; background:var(--bg-surface);">
+              <input type="radio" name="discResolutionAction" value="manual_count" style="margin-top:2px;">
+              <div>
+                <strong style="font-size:12px; color:var(--text-primary); display:block;">Verified Physical Count</strong>
+                <span style="font-size:11px; color:var(--text-muted);">Set explicit quantity verified on the shop shelf.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Verified Quantity (shown if manual_count selected) -->
+        <div class="form-group" id="discVerifiedQtyGroup" style="display:none; margin-top:8px;">
+          <label>Verified Physical Shelf Quantity (Units)*</label>
+          <input type="number" id="discVerifiedQtyInput" class="form-input" min="0" placeholder="e.g. 5">
+        </div>
+
+        <div class="form-group" style="margin-top:8px;">
+          <label>Audit Notes (Optional)</label>
+          <textarea id="discNotesInput" class="form-input" rows="2" placeholder="e.g. Shelf count verified by store staff..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelDiscrepancyModal">Cancel</button>
+        <button class="btn btn-primary" id="btnConfirmResolveDiscrepancy">
+          Confirm Resolution
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: MANUAL INVENTORY ADJUSTMENT (SHOP PC OFFLINE)
+       ========================================================================= -->
+  <div class="modal-overlay" id="downtimeModal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header">
+        <h3 id="downtimeModalTitle">Manual Inventory Adjustment</h3>
+        <button class="close-btn" id="closeDowntimeModalBtn" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background:var(--bg-surface-elevated); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px; font-size:12px; color:var(--text-secondary);">
+          <strong style="color:var(--text-primary);">Terminal Disconnected:</strong>
+          Adjusts cloud inventory directly to maintain continuous customer availability. Changes are logged with an audit trail.
+        </div>
+
+        <div class="form-group">
+          <label>Target Product*</label>
+          <select id="dtTargetSareeSelect" class="form-select"></select>
+        </div>
+
+        <div style="padding:10px 12px; background:var(--bg-canvas); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:10px; font-size:12px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span>Current Online Stock:</span>
+            <strong id="dtCurrentOnlineQty" style="font-family:var(--font-mono); color:var(--text-primary);">0 Nos</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:4px;">
+            <span>Reserved in Active Orders:</span>
+            <strong id="dtCurrentHeldQty" style="font-family:var(--font-mono); color:var(--status-amber);">0 Nos</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:4px;">
+            <span>Available for Purchase:</span>
+            <strong id="dtCurrentAvailableQty" style="font-family:var(--font-mono); color:var(--status-emerald);">0 Nos</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>New Verified Stock (Units)*</label>
+          <input type="number" id="dtNewQuantityInput" class="form-input" min="0" placeholder="e.g. 8">
+        </div>
+
+        <div class="form-group">
+          <label>Audit Narration*</label>
+          <input type="text" id="dtReasonInput" class="form-input" placeholder="e.g. Shelf audit during shop PC maintenance">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelDowntimeModal">Cancel</button>
+        <button class="btn btn-primary" id="btnConfirmDowntimeEntry">
+          Save Adjustment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: ADD NEW SAREE TO CATALOG
+       ========================================================================= -->
+  <div class="modal-overlay" id="addSareeModal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 id="addSareeModalTitle">Add New Saree to Catalog</h3>
+        <button class="close-btn" id="closeAddSareeModalBtn" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label>SKU / Base Product Code*</label>
+            <input type="text" id="asSkuInput" class="form-input" placeholder="e.g. SAI-KANJ-02" style="font-family:var(--font-mono); text-transform:uppercase;">
+          </div>
+          <div class="form-group" id="asSingleStockGroup">
+            <label>Initial Online Stock (Units)*</label>
+            <input type="number" id="asStockInput" class="form-input" min="0" value="5">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Saree Title / Product Name*</label>
+          <input type="text" id="asNameInput" class="form-input" placeholder="e.g. Royal Peacock Blue Kanjivaram Silk Saree">
+        </div>
+
+        <!-- Multi-color Variants Toggle -->
+        <div style="background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.25); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:600; color:#38bdf8; margin:0;">
+            <input type="checkbox" id="asHasVariants" style="accent-color:#38bdf8; width:15px; height:15px; cursor:pointer;">
+            <span>Has Multiple Colors / Variants (e.g. Red, Blue with separate stock counts)</span>
+          </label>
+        </div>
+
+        <!-- Variants Dynamic Section -->
+        <div id="asVariantsSection" style="display:none; margin-bottom:14px; background:var(--bg-canvas); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-secondary); margin:0;">Color Variants & Stock Allocation</label>
+            <button type="button" class="btn btn-sm btn-outline" id="btnAddVariantRow" style="padding:2px 8px; font-size:11px; display:flex; align-items:center; gap:4px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Color
+            </button>
+          </div>
+          <div id="asVariantsList" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Rows injected dynamically via JS -->
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">
+            Each color will receive its own individual SKU suffix (e.g. <code>-RED</code>, <code>-BLU</code>) and tracked stock in Tally ERP.
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label>Selling Price (₹)*</label>
+            <input type="number" id="asPriceInput" class="form-input" min="0" placeholder="e.g. 6500">
+          </div>
+          <div class="form-group">
+            <label>MRP (₹)</label>
+            <input type="number" id="asMrpInput" class="form-input" min="0" placeholder="e.g. 8999">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label>Fabric Type</label>
+            <input type="text" id="asFabricInput" class="form-input" placeholder="e.g. Pure Kanchipuram Silk">
+          </div>
+          <div class="form-group">
+            <label>Weave / Craft Style</label>
+            <input type="text" id="asWeaveInput" class="form-input" placeholder="e.g. Handwoven Zari Brocade">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Saree Photography (Upload File or Enter URL)</label>
+          <div style="display:flex; gap:8px;">
+            <input type="url" id="asPhotoUrlInput" class="form-input" placeholder="Paste image URL (https://...)">
+            <button type="button" class="btn btn-outline" id="asBtnBrowsePhoto">Upload File</button>
+            <input type="file" id="asPhotoFileInput" accept="image/*" style="display:none;">
+          </div>
+          <div id="asPhotoPreviewContainer" style="display:none; margin-top:8px;">
+            <img id="asPhotoPreviewImg" src="" alt="Saree preview" style="max-height:120px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Craftsmanship Description (Used for Gemini AI Multimodal Search & WhatsApp Bot)</label>
+          <textarea id="asDescriptionInput" class="form-textarea" rows="3" placeholder="Describe motifs, zari border, pallu pattern, and color shade..."></textarea>
+        </div>
+        <div class="form-group" style="margin-top:6px; margin-bottom:0; background:rgba(99,102,241,0.06); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid rgba(99,102,241,0.18);">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:500; color:var(--text-primary); margin:0;">
+            <input type="checkbox" id="asSyncTallyCheckbox" checked style="accent-color:var(--accent-primary); width:15px; height:15px; cursor:pointer;">
+            <span>Automatically push & inward initial stock into designated Tally Godown (<strong id="asGodownBadge" style="color:var(--status-emerald);">Sarees</strong>)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelAddSareeModal">Cancel</button>
+        <button class="btn btn-primary" id="btnConfirmAddSaree">
+          Save & Publish Saree
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Non-blocking Delete Confirmation Modal -->
+  <div class="modal-overlay" id="deleteConfirmModal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 440px; padding: 24px; text-align: center;">
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--status-rose-bg); border: 1px solid var(--status-rose-border); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: var(--status-rose);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </div>
+      <h3 style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Delete Saree</h3>
+      <p id="deleteConfirmMessage" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">Are you sure you want to permanently delete this saree? This will remove it from the catalog and sync deletion to Tally ERP.</p>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-outline" id="btnCancelDeleteModal" style="flex: 1;" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-primary" id="btnConfirmDeleteModal" style="flex: 1; background: var(--status-rose); border-color: var(--status-rose);" onclick="executeConfirmedDelete()">Delete Saree</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let pendingDeleteTarget = null;
+
+    window.closeDeleteModal = function() {
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) modal.classList.remove('active');
+      pendingDeleteTarget = null;
+    };
+
+    window.deleteProductCard = function(id, code, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      pendingDeleteTarget = { id, code };
+      const msg = document.getElementById('deleteConfirmMessage');
+      if (msg) msg.innerText = `Permanently delete [${code}] from both the catalog and Tally ERP?`;
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) modal.classList.add('active');
+    };
+
+    window.executeConfirmedDelete = async function() {
+      if (!pendingDeleteTarget) return;
+      const { id, code } = pendingDeleteTarget;
+      closeDeleteModal();
+
+      const card = document.getElementById(`card-${code}`);
+      if (card) {
+        card.style.opacity = '0.4';
+        card.style.pointerEvents = 'none';
+      }
+
+      try {
+        const res = await fetch('/api/products/' + encodeURIComponent(id || code), { method: 'DELETE' });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to delete');
+
+        if (typeof showToast === 'function') {
+          showToast(`Product [${code}] deleted from catalog & Tally.`);
+        }
+        if (card) {
+          card.style.transition = 'all 0.3s ease';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.8)';
+          setTimeout(() => card.remove(), 300);
+        }
+        if (typeof autonomousLoadCatalog === 'function') {
+          setTimeout(autonomousLoadCatalog, 350);
+        }
+      } catch (err) {
+        if (card) {
+          card.style.opacity = '1';
+          card.style.pointerEvents = 'auto';
+        }
+        alert(`Delete failed for [${code}]: ` + err.message);
+      }
+    };
+
+    // Universal Navigation Tab Switcher (Delegated, instant response)
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      const targetId = btn.getAttribute('data-tab');
+      if (!targetId) return;
+
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      const panel = document.getElementById(targetId);
+      if (panel) {
+        panel.classList.add('active');
+      }
+
+      // If switching to specific tab, trigger its loader
+      if (targetId === 'tabStockLog') {
+        if (typeof loadDiscrepancies === 'function') loadDiscrepancies();
+        if (typeof loadSyncRuns === 'function') loadSyncRuns();
+      } else if (targetId === 'tabVideos') {
+        if (typeof loadVideoRecords === 'function') loadVideoRecords();
+      } else if (targetId === 'tabInventory') {
+        if (typeof loadStoredProducts === 'function') loadStoredProducts();
+      }
+    });
+  </script>
+  <script src="app-v2.js"></script>
+  <script>
+    // Coordinate initial load with app-v2.js
+    if (typeof loadStoredProducts === 'function') {
+      loadStoredProducts();
+    }
+  </script>
+</body>
+</html>
