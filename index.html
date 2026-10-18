@@ -53,6 +53,9 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
           Sync Tally Balances
         </button>
+        <button class="btn btn-outline" onclick="const cur = localStorage.getItem('sai_api_base_url') || 'https://tunes-incidence-minutes-examples.trycloudflare.com'; const u = prompt('Configure Backend API URL for GitHub / Remote Hosting:', cur); if (u !== null) window.setSaiApiBaseUrl(u);" title="Configure Backend API Server URL" style="display:flex; align-items:center; gap:5px;">
+          <span>⚙️</span> API Config
+        </button>
         <button class="btn btn-outline" id="btnRefresh" title="Refresh data">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </button>

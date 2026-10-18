@@ -3,6 +3,39 @@
 // Standard Enterprise Data Operations and Multimodal Catalog Search
 // =============================================================================
 
+// -----------------------------------------------------------------------------
+// Dynamic API Host Resolver (Works seamlessly on localhost, GitHub Pages, or remote)
+// -----------------------------------------------------------------------------
+(function() {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const defaultRemote = 'https://tunes-incidence-minutes-examples.trycloudflare.com';
+  let apiBase = isLocal ? '' : (localStorage.getItem('sai_api_base_url') || defaultRemote);
+
+  const originalFetch = window.fetch;
+  window.fetch = function(url, options) {
+    if (typeof url === 'string' && url.startsWith('/api/')) {
+      url = (apiBase ? apiBase.replace(/\/$/, '') : '') + url;
+    }
+    return originalFetch.call(this, url, options).then(async (response) => {
+      const contentType = response.headers.get('content-type') || '';
+      if (typeof url === 'string' && url.includes('/api/') && contentType.includes('text/html')) {
+        throw new Error(`API server returned HTML instead of JSON. Ensure the backend agent is running or update your API URL (${apiBase || 'http://localhost:3000'}).`);
+      }
+      return response;
+    });
+  };
+
+  window.setSaiApiBaseUrl = function(newUrl) {
+    if (newUrl) {
+      localStorage.setItem('sai_api_base_url', newUrl.trim());
+    } else {
+      localStorage.removeItem('sai_api_base_url');
+    }
+    location.reload();
+  };
+})();
+
+
 // State
 let storedProducts = [];
 let videoRecords = [];
