@@ -1,0 +1,33 @@
+{
+  "name": "sai-traders-saree-bot",
+  "version": "1.0.0",
+  "description": "Sai Traders — WhatsApp Saree Intelligence Bot & TallyPrime Inventory Agent",
+  "main": "agent/index.js",
+  "scripts": {
+    "admin": "node admin/server.js",
+    "agent": "node agent/index.js",
+    "desktop": "electron desktop/main.js",
+    "electron": "electron desktop/main.js",
+    "test": "node scripts/test_tally_flow.js",
+    "check-env": "node scripts/test_env_and_services.js",
+    "add-tally-products": "node scripts/add_products_to_tally.js",
+    "reembed": "node scripts/reembed_catalog_v2.js",
+    "eval": "node eval/run_eval.js"
+  },
+  "keywords": [
+    "tally",
+    "whatsapp",
+    "gemini",
+    "supabase"
+  ],
+  "author": "Sai Traders",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "electron": "^44.9.0",
+    "pg-mem": "^3.0.14"
+  }
+}
